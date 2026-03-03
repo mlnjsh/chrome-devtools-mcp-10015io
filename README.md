@@ -19,9 +19,9 @@ Use [10015.io Developer Toolkit](https://10015.io) (text-to-handwriting, CSS gen
 - [Chrome](https://www.google.com/chrome/) (stable)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI or VS Code extension
 
-## Setup
+## Step-by-Step Setup
 
-### 1. Add MCP config
+### Step 1: Add MCP config
 
 Copy `.mcp.json` to your home directory (`~/.mcp.json`) or merge it with your existing config:
 
@@ -29,12 +29,16 @@ Copy `.mcp.json` to your home directory (`~/.mcp.json`) or merge it with your ex
 {
   "chrome-devtools": {
     "command": "npx",
-    "args": ["-y", "chrome-devtools-mcp@latest"]
+    "args": ["-y", "chrome-devtools-mcp@latest", "--browser-url=http://127.0.0.1:9222"]
   }
 }
 ```
 
-### 2. Launch Chrome with remote debugging
+> The `--browser-url` flag tells the MCP server to connect to your running Chrome instance on port 9222 instead of launching a new browser.
+
+### Step 2: Launch Chrome with remote debugging
+
+Close all existing Chrome windows first, then run:
 
 **Windows:**
 ```bash
@@ -51,24 +55,32 @@ Copy `.mcp.json` to your home directory (`~/.mcp.json`) or merge it with your ex
 google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-profile-stable
 ```
 
-### 3. Navigate to 10015.io
+> **Important:** Keep this Chrome window open the entire time. This is the browser Claude will control.
 
-Open https://10015.io in the launched Chrome window and go to the tool you want to use (e.g., Text to Handwriting).
+### Step 3: Open 10015.io
 
-### 4. Restart Claude Code
+In the Chrome window that just launched, navigate to https://10015.io and open any tool you want to use (e.g., **Text to Handwriting**).
 
-Close and reopen Claude Code so it picks up the new MCP server.
+### Step 4: Restart Claude Code
 
-### 5. Ask Claude
+Close and reopen Claude Code so it picks up the new MCP server. After restart, `chrome-devtools` should appear as an available MCP server.
 
-Example prompts:
-- *"Take a screenshot of my current Chrome tab"*
-- *"Go to 10015.io text-to-handwriting and convert this text: Hello World"*
-- *"Generate a CSS gradient using 10015.io"*
+### Step 5: Ask Claude to interact with the page
+
+Example prompts you can try:
+
+| Task | Prompt |
+|---|---|
+| Screenshot | *"Take a screenshot of the current Chrome tab"* |
+| Text to Handwriting | *"Navigate to https://10015.io/tools/text-to-handwriting-converter, type 'Hello World' in the text area, and take a screenshot of the result"* |
+| CSS Gradient | *"Go to https://10015.io/tools/css-gradient-generator and create a blue-to-purple gradient, then give me the CSS code"* |
+| Lorem Ipsum | *"Navigate to https://10015.io/tools/lorem-ipsum-generator, generate 3 paragraphs, and paste the output here"* |
+| List tabs | *"List all open tabs in Chrome"* |
+| Any tool | *"Navigate to https://10015.io and find the [tool name]"* |
 
 ## Alternative: Auto-Connect (Chrome 144+)
 
-If you have Chrome 144+, you can use `--autoConnect` instead of remote debugging:
+If you have Chrome 144+, you can skip the `--remote-debugging-port` step and use `--autoConnect`:
 
 ```json
 {
@@ -79,7 +91,7 @@ If you have Chrome 144+, you can use `--autoConnect` instead of remote debugging
 }
 ```
 
-This avoids the manual `--remote-debugging-port` step.
+Then just open Chrome normally — no special flags needed.
 
 ## How It Works
 
@@ -89,6 +101,16 @@ Claude Code  -->  Chrome DevTools MCP Server  -->  Chrome Browser  -->  10015.io
 ```
 
 Claude sends commands through the MCP server, which uses the Chrome DevTools Protocol (CDP) to control the browser — navigating pages, filling forms, clicking buttons, and reading results.
+
+## Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| "Cannot connect to browser" | Make sure Chrome is running with `--remote-debugging-port=9222`. Close ALL other Chrome windows before launching. |
+| MCP server not showing in Claude Code | Restart Claude Code. Verify `~/.mcp.json` is valid JSON. |
+| Wrong tab is being controlled | Ask Claude to *"list all open tabs"* then *"switch to tab [number]"* |
+| Chrome won't launch with debug port | Another Chrome instance may be running. Close all Chrome windows and try again. |
+| Tools on 10015.io look different | The site may have updated its layout. Adjust your prompts or ask Claude to *"take a screenshot and describe what you see"* |
 
 ## Limitations
 
